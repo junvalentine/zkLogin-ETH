@@ -64,7 +64,7 @@ template sha256Unsafe(maxNumBlocks) {
     component calcTotal[256];
     component eqs[maxNumBlocks];
 
-    for (var i =0; i < maxNumBlocks; i++) {
+    for (var i = 0; i < maxNumBlocks; i++) {
         // Determine if the given block index is equal to the terminating data block index
         eqs[i] = IsEqual();
         eqs[i].in[0] <== i;
@@ -136,7 +136,7 @@ template sha256(maxInputLen, maxBlocks) {
     component sha256Padding = sha256Padding(maxInputLen)(inp);
 
     // convert to bits
-    signal paddedTextBits[maxInputLen*8] <== BytesToBits(maxInputLen)(sha256Padding.paddedText);
+    signal paddedTextBits[maxInputLen*8] <== bytesToBits(maxInputLen)(sha256Padding.paddedText);
 
     // compute hash
     out <== sha256Unsafe(maxBlocks)(paddedTextBits, sha256Padding.numBlocks - 1);
