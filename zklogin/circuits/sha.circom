@@ -93,38 +93,42 @@ template sha256Padding(maxInputLen){
     signal output numBlocks; // number of blocks
     
     // text length
-    component len = msgLen(maxInputLen)(inp);
+    component len = msgLen(maxInputLen);
+    len.inp <== inp;
 
     assert(len.out + 9 <= maxInputLen);
 
     // calculate paddedText length and number of blocks
     var paddedLen = len.out + (64 - (len.out % 64)); // calc paddedText length
     assert(paddedLen % 64 == 0);
-    numBlocks <== paddedLen / 64;
+    numBlocks <-- paddedLen / 64;
+    assert(numBlocks*64 == paddedLen);
 
     // 4.1.c, compute 64-bit block that is L, big endian
     component len2bytes = longToBytes(8);
-    len2bytes.in <== len.out;
+    len2bytes.inp <== len.out;
 
     for (var i = 0; i < maxInputLen; i++) {
-        if (i < len.out){
-            paddedText[i] <-- inp[i]; // Copy the input text
-        } else {
-            if (i == len.out) {
-                paddedText[i] <-- 128; // 4.1.a, add the 1 on the end
-            } else {
-                if (i < paddedLen){
-                    if (i % 64 < 56) {
-                        paddedText[i] <-- 0; // 4.1.b, add 0s
-                    } else {
-                        paddedText[i] <-- len2bytes.out[(i % 64 - 56)]; // 4.1.c, add the length
-                    }
-                } else {
-                    paddedText[i] <-- 0; // Fulfill 0s
-                }
-            }
-        }
-        // paddedText[i] <-- i < len.out ? inp[i] : (i == len.length ? (1 << 7) : (i < padded_len ? (i % 64 < 56 ? 0 : (i % 64 > 56 ? len2bytes.out[(i % 64 - 56)]: 0)) : 0)); 
+        // if (i < len.out){
+        //     paddedText[i] <-- inp[i]; // Copy the input text
+        // } else {
+        //     if (i == len.out) {
+        //         paddedText[i] <-- 128; // 4.1.a, add the 1 on the end
+        //     } else {
+        //         if (i < paddedLen){
+        //             if (i % 64 < 56) {
+        //                 paddedText[i] <-- 0; // 4.1.b, add 0s
+        //             } else {
+        //                 paddedText[i] <-- len2bytes.out[(i % 64 - 56)]; // 4.1.c, add the length
+        //             }
+        //         } else {
+        //             paddedText[i] <-- 0; // Fulfill 0s
+        //         }
+        //     }
+        // }
+        paddedText[i] <-- i < len.out ? inp[i] : (i == len.out ? 128 : (i < paddedLen ? (i % 64 < 56 ? 0 : (i % 64 > 56 ? len2bytes.out[(i % 64 - 56)]: 0)) : 0)); 
+
+        // paddedText[i] <-- i < len.out ? inp[i] : (i == len.out ? 128 : (i < padded_len ? (i % 64 < 56 ? 0 : (i % 64 > 56 ? len2bytes.out[(i % 64 - 56)]: 0)) : 0)); 
     }
 }
 // Compute sha256 hash of the input
@@ -133,7 +137,8 @@ template sha256(maxInputLen, maxBlocks) {
     signal output out[256];
 
     // text padding
-    component sha256Padding = sha256Padding(maxInputLen)(inp);
+    component sha256Padding = sha256Padding(maxInputLen);
+    sha256Padding.inp <== inp;
 
     // convert to bits
     signal paddedTextBits[maxInputLen*8] <== bytesToBits(maxInputLen)(sha256Padding.paddedText);

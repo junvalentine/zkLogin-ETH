@@ -20,7 +20,7 @@ function AZP_KEY_LENGTH() {
     return 6;
 }
 
-function NONCE_LENGTH() {
+function NONCE_KEY_LENGTH() {
     // len("nonce":)
     return 8;
 }
@@ -48,6 +48,10 @@ function IAT_KEY_LENGTH() {
 function EMAIL_KEY_LENGTH() {
     // len("email":)
     return 8;
+}
+function AUD_KEY_LENGTH() {
+    // len("aud":)
+    return 6;
 }
 
 function TIMESTAMP_LENGTH() {
@@ -78,7 +82,7 @@ function AZP_KEY() {
     return [34, 97, 122, 112, 34, 58];
 }
 
-function NONCE() {
+function NONCE_KEY() {
     // "nonce":
     return [34, 110, 111, 110, 99, 101, 34, 58];
 }
@@ -101,4 +105,9 @@ function EMAIL_KEY() {
 function SUB_KEY() {
     // "sub":
     return [34, 115, 117, 98, 34, 58];
+}
+
+function AUD_KEY() {
+    // "aud":
+    return [34, 97, 117, 100, 34, 58];
 }
