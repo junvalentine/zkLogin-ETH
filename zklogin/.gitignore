@@ -1,2 +1,4 @@
 tests/compiled-test-circuit
 node_modules
+circom_tester/test/**/*.r1cs
+circom_tester/test/**/*.sym
