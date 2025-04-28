@@ -83,13 +83,13 @@ template msgLen(maxLen){
         totalLength += is_nonzero[i];
     }
     // Set the output length
-    signal length <== totalLength;
+    out <== totalLength;
     // Ensure that the characters after the first 0 are also 0
     component selector[maxLen];
     for (var i = 0; i < maxLen; i++) {
         selector[i] = GreaterEqThan(11);
         selector[i].in[0] <== i;
-        selector[i].in[1] <== length;
+        selector[i].in[1] <== out;
     }
 
     for (var i = 0; i < maxLen; i++) {

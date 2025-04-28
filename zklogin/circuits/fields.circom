@@ -21,6 +21,7 @@ template extractNonce(maxPayloadLength, maxNonceLength) {
     // Extract nonce, ignore "
     signal nonceStartIndex <== nonceKeyStartIndex + nonceKeyLength + 1;
     signal nonceMatch[maxNonceLength] <== revealSubstring(maxPayloadLength, maxNonceLength)(payload, nonceStartIndex, nonceLength);
+
     nonce <== strToInt(maxNonceLength)(nonceMatch, nonceLength);
 }
 
@@ -43,7 +44,6 @@ template extractSub(maxPayloadLength, maxSubLength) {
     signal subStartIndex <== subKeyStartIndex + subKeyLength + 1;
     signal subMatch[maxSubLength] <== revealSubstring(maxPayloadLength, maxSubLength)(payload, subStartIndex, subLength);
     sub <== strToInt(maxSubLength)(subMatch ,subLength);
-
 }
 
 template extractIss(maxPayloadLength, maxIssLength) {

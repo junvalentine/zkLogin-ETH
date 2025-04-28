@@ -5,7 +5,7 @@ pragma circom 2.0.0;
 include "./fp.circom";
 include "../circomlib/circuits/bitify.circom";
 
-// Template copied from https://github.com/doubleblind-xyz/circom-rsa/blob/master/circuits/rsa.circom
+// Template copied from c
 template FpPow65537Mod(n, k) {
     signal input base[k];
     // Exponent is hardcoded at 65537

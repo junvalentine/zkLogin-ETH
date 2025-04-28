@@ -18,8 +18,6 @@ template zkLogin(
 ){  
     // public
     signal input pubOPModulus[32]; // OP modulus, 32 chunks of 64 bits = 2048 bits number
-    signal input iss;
-    signal input zkAddr;
     signal input expiryTime; // 32 bits number, block.timestamp ?
     signal input pubUser[4]; // 4 chunks of up to 16 bytes = 128 bit element, as 32 bytes chunk will be greater than the zk modulus 
     // witness
@@ -35,7 +33,7 @@ template zkLogin(
     // hash of JWT
     signal jwtHash[256] <== sha256(maxJWTLen, maxJWTBlocks)(jwt);
 
-    signal input signature[32]; // JWT signature , 32 chunks of 64 bits = 2048 bits number
+    signal input signature[32]; // little endian, JWT signature , 32 chunks of 64 bits = 2048 bits number
     // check valid signature, all chunk < 2**64
     for (var i = 0; i < 32; i++) {
         var is_byte = LessThan(65)([signature[i], 2**64]);
@@ -68,16 +66,18 @@ template zkLogin(
     // decode base64 to ascii
     signal ascii_jwt_payload[maxAsciiJwtPayloadLen] <== Base64Decode(maxAsciiJwtPayloadLen)(jwtPayload);
     // signal ascii_jwt_header[maxAsciiJwtHeaderLen] <== Base64Decode(maxAsciiJwtHeaderLen)(jwtHeader[]);
-    for (var i = 0; i < maxAsciiJwtPayloadLen; i++){
-       log("ascii_jwt_payload: ", ascii_jwt_payload[i]);
-    }
-    
+
     // parse jwt nonce
     signal input nonceKeyStartIndex;
     signal input nonceLength;
     // extract nonce from JWT
     signal extractedNonce <== extractNonce(maxAsciiJwtPayloadLen, maxNonceLen)(ascii_jwt_payload, nonceKeyStartIndex, nonceLength);
     log("extractedNonce: ", extractedNonce);
+    // assert each chunk < 2**128
+    for (var i = 0; i < 4; i++) {
+        var is_byte = LessThan(129)([pubUser[i], 2**128]);
+        is_byte === 1;
+    }
     // compute intended nonce
     signal computedNonce <== Poseidon(6)([pubUser[0], pubUser[1],pubUser[2], pubUser[3], expiryTime, r]);
     log("computedNonce: ", computedNonce);
@@ -90,22 +90,22 @@ template zkLogin(
     signal input subLength;
     signal extractedSub <== extractSub(maxAsciiJwtPayloadLen, maxSubLen)(ascii_jwt_payload, subKeyStartIndex, subLength);
     log("extractedSub: ", extractedSub);
+
     signal input issKeyStartIndex;
     signal input issLength;
     signal extractedIss <== extractIss(maxAsciiJwtPayloadLen, maxIssLen)(ascii_jwt_payload, issKeyStartIndex, issLength);
+    signal output iss <== extractedIss;
     log("extractedIss: ", extractedIss);
-    iss === extractedIss;
+
     signal input audKeyStartIndex;
     signal input audLength;
     signal extractedAud <== extractAud(maxAsciiJwtPayloadLen, maxAudLen)(ascii_jwt_payload, audKeyStartIndex, audLength);
     log("extractedAud: ", extractedAud);
     
-    // assert zkaddr = H(jwt.sub, jwt.iss, jwt.aud, salt)
+    // zkaddr = H(jwt.sub, jwt.iss, jwt.aud, salt)
     // compute intended zkaddr
-    signal computedZkAddr <== Poseidon(4)([extractedSub, extractedIss, extractedAud, salt]);
+    signal output computedZkAddr <== Poseidon(4)([extractedSub, extractedIss, extractedAud, salt]);
     log("computedZkaddr: ", computedZkAddr);
-    computedZkAddr === zkAddr;
-
 }
 
-component main {public [pubOPModulus, iss, zkAddr, expiryTime, pubUser]} = zkLogin(1536, 300, 1536-64, 120, 120, 120, 120);
+component main {public [pubOPModulus, expiryTime, pubUser]} = zkLogin(1536, 1472, 300, 120, 120, 120, 120);

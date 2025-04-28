@@ -95,7 +95,6 @@ template sha256Padding(maxInputLen){
     // text length
     component len = msgLen(maxInputLen);
     len.inp <== inp;
-
     assert(len.out + 9 <= maxInputLen);
 
     // calculate paddedText length and number of blocks
@@ -103,11 +102,9 @@ template sha256Padding(maxInputLen){
     assert(paddedLen % 64 == 0);
     numBlocks <-- paddedLen / 64;
     assert(numBlocks*64 == paddedLen);
-
     // 4.1.c, compute 64-bit block that is L, big endian
     component len2bytes = longToBytes(8);
-    len2bytes.inp <== len.out;
-
+    len2bytes.inp <== len.out * 8;
     for (var i = 0; i < maxInputLen; i++) {
         // if (i < len.out){
         //     paddedText[i] <-- inp[i]; // Copy the input text
@@ -135,14 +132,13 @@ template sha256Padding(maxInputLen){
 template sha256(maxInputLen, maxBlocks) {
     signal input inp[maxInputLen];
     signal output out[256];
-
+    
     // text padding
     component sha256Padding = sha256Padding(maxInputLen);
     sha256Padding.inp <== inp;
-
     // convert to bits
     signal paddedTextBits[maxInputLen*8] <== bytesToBits(maxInputLen)(sha256Padding.paddedText);
-
+    
     // compute hash
     out <== sha256Unsafe(maxBlocks)(paddedTextBits, sha256Padding.numBlocks - 1);
 }
