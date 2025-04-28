@@ -195,9 +195,6 @@ describe("RSA", function () {
     this.timeout(300000); // Increased timeout for OAuth flow
     
     it("Should correctly verify the JWT", async function () {
-        // Option 1: Use hardcoded JWT (faster for repeated testing)
-        let jwt = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjIzZjdhMzU4Mzc5NmY5NzEyOWU1NDE4ZjliMjEzNmZjYzBhOTY0NjIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiIzMjEyOTQ2MTk3NzYtcGtybnFkaThyYTZndnN1MmZxZjdrN2VidDE3Nmlvc28uYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiIzMjEyOTQ2MTk3NzYtcGtybnFkaThyYTZndnN1MmZxZjdrN2VidDE3Nmlvc28uYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTI5NTIzNjA2NzQyMDUxNjM0MzkiLCJub25jZSI6ImNhOTc4MTEyY2ExYmJkY2FmYWMyMzFiMzlhMjNkYzRkYTc4NmVmZjgxNDdjNGU3MmI5ODA3Nzg1YWZlZTQ4YmIiLCJuYmYiOjE3NDU2MDY3NTgsImlhdCI6MTc0NTYwNzA1OCwiZXhwIjoxNzQ1NjEwNjU4LCJqdGkiOiIzYmE4ZmQ2MTc1MzhjOWEwMmNkZmFjMGE2NTkyNjUxOGVkZjZjYzFkIn0";
-        
         // Load and test the circuit
         const circuit = await wasm_tester(
             path.join("/mnt/d/lv/zkLogin-ETH/zklogin/circuits", "main.circom"),
