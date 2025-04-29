@@ -7,11 +7,13 @@ const http = require('http');
 const querystring = require('querystring');
 const axios = require('axios');
 const url = require('url');
-require('dotenv').config({ path: path.join("/mnt/d/lv/zkLogin-ETH/zklogin",".env") });
+require('dotenv').config({ path: path.join("/home/lehongminh9203/thesis/zkLogin-ETH/zklogin",".env") });
 
 const F1Field = require("ffjavascript").F1Field;
 const ethers = require('ethers');
 const { Scalar } = require('ffjavascript');
+const { execSync } = require('child_process');
+const { performance } = require('perf_hooks');
 exports.p = Scalar.fromString("21888242871839275222246405745257275088548364400416034343698204186575808495617");
 const Fr = new F1Field(exports.p);
 
@@ -195,7 +197,7 @@ async function fetchRSAKeyFromJWT(jwt) {
 async function run() {
     /////////////// Step 1. Generate key pair
     const wallet = new ethers.Wallet("0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80");
-    const privateKey = BigInt(wallet.privateKey);
+    // const privateKey = BigInt(wallet.privateKey);
     const publicKey = wallet._signingKey().publicKey.slice(4); // Remove '0x' prefix and 04 for uncompressed key
 
     console.log('Private key:', wallet.privateKey);
@@ -321,27 +323,42 @@ async function run() {
     };
     console.log("Circuit input:", input);
 
-    console.log("Starting proof generation...");
+    // Calculate witness first (optional but useful to separate steps)
+    await snarkjs.wtns.calculate(input, "out/main_js/main.wasm", "out/witness.wtns");
+    // fs.writeFileSync("witness.wtns", Buffer.from(witnessCalcBuffer));
+    console.log("Starting proof generation with rapidsnark...");
+
     const startTime = performance.now();
-    
-    const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, "../out/main_js/main.wasm", "../out/circuit_final.zkey");
-    
-    const endTime = performance.now();
-    const timeElapsed = (endTime - startTime) / 1000; // convert to seconds
-    console.log(`Proof generation completed in ${timeElapsed.toFixed(2)} seconds`);
-
-    console.log("Proof: ");
-    console.log(JSON.stringify(proof, null, 1));
-
-    const vKey = JSON.parse(fs.readFileSync("../out/verification_key.json"));
-
-    const res = await snarkjs.groth16.verify(vKey, publicSignals, proof);
-
-    if (res === true) {
-        console.log("Verification OK");
-    } else {
-        console.log("Invalid proof");
+    try {
+        const output = execSync('../../rapidsnark/package/bin/prover out/circuit_final.zkey out/witness.wtns out/proof.json out/public.json', { encoding: 'utf8' });
+        console.log(output);
+        
+        const endTime = performance.now();
+        const timeElapsed = (endTime - startTime) / 1000; // convert to seconds
+        console.log(`Rapidsnark proof generation completed in ${timeElapsed.toFixed(2)} seconds`);
+    } catch (error) {
+        console.error("Error executing rapidsnark:", error.message);
     }
+    // console.log("Starting proof generation...");
+    // const startTime = performance.now();
+    // const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, "out/main_js/main.wasm", "out/circuit_final.zkey");
+    
+    // const endTime = performance.now();
+    // const timeElapsed = (endTime - startTime) / 1000; // convert to seconds
+    // console.log(`Proof generation completed in ${timeElapsed.toFixed(2)} seconds`);
+
+    // console.log("Proof: ");
+    // console.log(JSON.stringify(proof, null, 1));
+
+    // const vKey = JSON.parse(fs.readFileSync("out/verification_key.json"));
+
+    // const res = await snarkjs.groth16.verify(vKey, publicSignals, proof);
+
+    // if (res === true) {
+    //     console.log("Verification OK");
+    // } else {
+    //     console.log("Invalid proof");
+    // }
 
 }
 

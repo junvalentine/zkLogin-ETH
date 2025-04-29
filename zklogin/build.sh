@@ -4,11 +4,13 @@ echo "1. clearing files to rebuild"
 rm -rf ./out && mkdir ./out
 
 echo "2. compiling circuit to snarkjs..."
-circom circuit.circom --r1cs --wasm --sym --output=out
+circom circuits/main.circom --r1cs --wasm --sym --output=out
 
 echo "3. groth16 setup"
-snarkjs groth16 setup out/main.r1cs pot14_final.ptau out/circuit_0001.zkey
+snarkjs groth16 setup out/main.r1cs powersOfTau28_hez_final_21.ptau out/circuit_final.zkey
 
 echo "4. export verification key"
-snarkjs zkey export verificationkey target/circuit_0001.zkey target/verification_key.json
+snarkjs zkey export verificationkey out/circuit_final.zkey out/verification_key.json
 
+echo "5. generate contract"
+snarkjs zkey export solidityverifier out/circuit_final.zkey out/verifier.sol

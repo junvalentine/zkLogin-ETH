@@ -1508,7 +1508,7 @@ serialize-javascript@^6.0.2:
   dependencies:
     randombytes "^2.1.0"
 
-snarkjs@^0.7.3:
+snarkjs@^0.7.3, snarkjs@^0.7.5:
   version "0.7.5"
   resolved "https://registry.npmjs.org/snarkjs/-/snarkjs-0.7.5.tgz"
   integrity sha512-h+3c4rXZKLhLuHk4LHydZCk/h5GcNvk5GjVKRRkHmfb6Ntf8gHOA9zea3g656iclRuhqQ3iKDWFgiD9ypLrKiA==

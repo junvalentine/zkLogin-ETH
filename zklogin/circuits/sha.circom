@@ -1,7 +1,7 @@
 pragma circom 2.0.0;
 
 include "./circomlib/circuits/sha256/constants.circom";
-include "./circomlib/circuits/sha256/sha256Compression.circom";
+include "./circomlib/circuits/sha256/sha256compression.circom";
 include "./circomlib/circuits/comparators.circom";
 include "./utils.circom";
 
