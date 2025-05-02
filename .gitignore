@@ -1,1 +1,16 @@
-node_modules
+account-abstraction/typechain
+account-abstraction/.env
+account-abstraction/node_modules
+account-abstraction/cache
+account-abstraction/deployments
+account-abstraction/artifacts
+account-abstraction/yarn.lock
+
+zklogin/node_modules
+zklogin/.env
+zklogin/out
+zklogin/package-lock.json
+zklogin/powersOfTau28_hez_final_21.ptau
+zklogin/test/**/*.r1cs 
+zklogin/test/**/*.sym
+zklogin/yarn.lock
