@@ -11,6 +11,7 @@ import { F1Field, Scalar } from "ffjavascript";
 import { Wallet } from 'ethers';
 import { execSync } from 'child_process';
 import { performance } from 'perf_hooks';
+const fs = require('fs');
 
 // Dynamic import for the 'open' package
 import('open').then((module) => {
@@ -244,7 +245,8 @@ interface CircuitInput {
 
 async function run(): Promise<void> {
   /////////////// Step 1. Generate key pair
-  const wallet = new Wallet("0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80");
+  // Counter to ensure deterministic account generation
+  const wallet = new Wallet("0x5fe7f977e71dba2ea1a68e21057beebb9be2ac30c6410aa38d4f3fbe41dcffd2");
   // Remove '0x' prefix and 04 for uncompressed key
   const publicKey = wallet._signingKey().publicKey.slice(4); 
 
@@ -369,14 +371,15 @@ async function run(): Promise<void> {
     "audLength": audLength.toString()
   };
   console.log("Circuit input:", input);
-
+  // Write input to JSON file
+  fs.writeFileSync("out/input.json", JSON.stringify(input, null, 2));
   // Calculate witness first (optional but useful to separate steps)
   await snarkjs.wtns.calculate(input, "out/main_js/main.wasm", "out/witness.wtns");
   console.log("Starting proof generation with rapidsnark...");
 
   const startTime = performance.now();
   try {
-    const output = execSync('../../rapidsnark/package/bin/prover out/circuit_final.zkey out/witness.wtns out/proof.json out/public.json', { encoding: 'utf8' });
+    const output = execSync('./rapidsnark/package/bin/prover out/circuit_final.zkey out/witness.wtns out/proof.json out/public.json', { encoding: 'utf8' });
     console.log(output);
     
     const endTime = performance.now();

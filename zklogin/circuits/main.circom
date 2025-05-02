@@ -89,23 +89,19 @@ template zkLogin(
     signal input subKeyStartIndex;
     signal input subLength;
     signal extractedSub <== extractSub(maxAsciiJwtPayloadLen, maxSubLen)(ascii_jwt_payload, subKeyStartIndex, subLength);
-    log("extractedSub: ", extractedSub);
 
     signal input issKeyStartIndex;
     signal input issLength;
     signal extractedIss <== extractIss(maxAsciiJwtPayloadLen, maxIssLen)(ascii_jwt_payload, issKeyStartIndex, issLength);
     signal output iss <== extractedIss;
-    log("extractedIss: ", extractedIss);
 
     signal input audKeyStartIndex;
     signal input audLength;
     signal extractedAud <== extractAud(maxAsciiJwtPayloadLen, maxAudLen)(ascii_jwt_payload, audKeyStartIndex, audLength);
-    log("extractedAud: ", extractedAud);
     
     // zkaddr = H(jwt.sub, jwt.iss, jwt.aud, salt)
     // compute intended zkaddr
     signal output computedZkAddr <== Poseidon(4)([extractedSub, extractedIss, extractedAud, salt]);
-    log("computedZkaddr: ", computedZkAddr);
 }
 
 component main {public [pubOPModulus, expiryTime, pubUser]} = zkLogin(1536, 1472, 300, 120, 120, 120, 120);
