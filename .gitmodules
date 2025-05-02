@@ -7,3 +7,10 @@
 [submodule "zklogin/rapidsnark"]
 	path = zklogin/rapidsnark
 	url = https://github.com/iden3/rapidsnark
+[submodule "skandha"]
+	path = skandha
+	url = https://github.com/etherspot/skandha.git
+	branch = releases/v0.7
+[submodule "zeroauth-chain-link"]
+	path = zeroauth-chain-link
+	url = https://github.com/kuramaa97/zeroauth-chain-link.git

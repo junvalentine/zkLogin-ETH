@@ -9,6 +9,7 @@ import {
 } from '../typechain';
 import fs from 'fs';
 import { BigNumber } from 'ethers';
+const { exec } = require('child_process');
 
 async function main() {
   console.log("Starting targeted fix script...");
@@ -130,7 +131,7 @@ async function main() {
   ]);
   
   // 11. Get wallet nonce
-  const nonce = await entryPoint.getNonce(walletAddress, 0);
+  const nonce = await entryPoint.getNonce(walletAddress, 1);
   console.log(`Wallet nonce: ${nonce.toString()}`);
   
   // 12. Create UserOp with minimal parameters, being explicit about gas limits
@@ -167,6 +168,89 @@ async function main() {
     throw error;
   }
   
+  // Format the UserOp in the format expected by the bundler
+  const bundlerUserOp = {
+    sender: userOp.sender,
+    nonce: userOp.nonce.toString(),
+    initCode: userOp.initCode,
+    callData: userOp.callData,
+    callGasLimit: userOp.callGasLimit.toString(),
+    verificationGasLimit: userOp.verificationGasLimit.toString(),
+    preVerificationGas: userOp.preVerificationGas.toString(),
+    maxFeePerGas: userOp.maxFeePerGas.toString(),
+    maxPriorityFeePerGas: userOp.maxPriorityFeePerGas.toString(),
+    paymasterAndData: userOp.paymasterAndData,
+    signature: userOp.signature
+  };
+  
+  // Create the JSON-RPC request payload
+  const bundlerPayload = {
+    jsonrpc: "2.0",
+    // method: "eth_estimateUserOperationGas",
+    method: "eth_sendUserOperation",
+    params: [bundlerUserOp, entryPointAddress],
+    id: 123
+  };
+  
+  // Use curl to send the request to the bundler
+  const bundlerUrl = "http://0.0.0.0:14337/rpc";
+  
+  const curlCommand = `curl --request POST --url ${bundlerUrl} --header 'Content-Type: application/json' --data '${JSON.stringify(bundlerPayload)}'`;
+  
+  console.log("Sending UserOp to bundler...");
+  console.log(`Sending request to bundler at ${bundlerUrl}`);
+  
+  try {
+    const { stdout, stderr } = await new Promise((resolve, reject) => {
+      exec(curlCommand, (error, stdout, stderr) => {
+        if (error) reject(error);
+        else resolve({ stdout, stderr });
+      });
+    });
+    
+    if (stderr) console.warn(`Bundler stderr: ${stderr}`);
+    console.log(`Bundler response: ${stdout}`);
+  } catch (execError) {
+    console.error(`Request failed: ${execError.message}`);
+  }
+  // Parse the bundler response to get the UserOp hash
+  const bundlerResponse = JSON.parse(stdout);
+  const userOpHash = bundlerResponse.result;
+  console.log(`UserOp hash: ${userOpHash}`);
+  
+  // Wait for the transaction to be mined
+  console.log("Waiting for transaction to be mined...");
+  await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+  
+  // Get UserOp receipt
+  const receiptPayload = {
+    jsonrpc: "2.0",
+    id: 3,
+    method: "eth_getUserOperationReceipt",
+    params: [userOpHash]
+  };
+  
+  const receiptCommand = `curl --request POST --url ${bundlerUrl} --header 'Content-Type: application/json' --data '${JSON.stringify(receiptPayload)}'`;
+  
+  try {
+    const { stdout: receiptStdout } = await new Promise((resolve, reject) => {
+      exec(receiptCommand, (error, stdout, stderr) => {
+        if (error) reject(error);
+        else resolve({ stdout, stderr });
+      });
+    });
+    
+    console.log(`Receipt response: ${receiptStdout}`);
+    
+    // Log transaction hash if available
+    const receipt = JSON.parse(receiptStdout);
+    if (receipt.result && receipt.result.receipt) {
+      console.log(`Transaction hash: ${receipt.result.receipt.transactionHash}`);
+    }
+  } catch (error) {
+    console.error(`Failed to get receipt: ${error.message}`);
+  }
+  process.exit(0);
   // 15. Pack the UserOp
   const packedUserOp = packUserOp(userOp);
   // 16. Log a short version of the UserOp for debugging
