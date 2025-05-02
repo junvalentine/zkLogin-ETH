@@ -7,7 +7,3 @@
 [submodule "zklogin/rapidsnark"]
 	path = zklogin/rapidsnark
 	url = https://github.com/iden3/rapidsnark
-[submodule "account-abstraction"]
-	path = account-abstraction
-	url = https://github.com/junvalentine/account-abstraction.git
-	branch = releases/v0.7
