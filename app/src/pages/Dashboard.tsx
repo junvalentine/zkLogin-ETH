@@ -112,7 +112,7 @@ const Dashboard = () => {
       <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Account Dashboard</h1>
+            <h1 className="text-2xl font-bold">User Dashboard</h1>
             <Link to="/">
               <Button variant="outline" size="sm" className="flex items-center gap-1">
                 <ArrowLeft className="h-4 w-4" />
