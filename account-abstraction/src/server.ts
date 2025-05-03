@@ -7,7 +7,7 @@ import { WalletContractFactory__factory } from '../typechain';
 import { buildPoseidon } from "circomlibjs";
 import { Buffer } from 'buffer';
 import { EntryPoint__factory, WalletContract__factory } from '../typechain';
-import { signUserOpWithZkProof, packUserOp } from '../test/zklogin/UserOp';
+import { signUserOpWithZkProof, packUserOp } from '../test/UserOp';
 import { Wallet } from 'ethers';
 import fs from 'fs';
 import path from 'path';
