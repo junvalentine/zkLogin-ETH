@@ -25,21 +25,18 @@ interface CircuitInput {
 }
 
 interface ProofData {
-  proof: {
-    pi_a: string[];
-    pi_b: string[][];
-    pi_c: string[];
-    protocol: string;
-  };
-  publicSignals: string[];
-  expiresAt: number;
-  createdAt: number;
+  pi_a: string[];
+  pi_b: string[][];
+  pi_c: string[];
+  protocol: string;
 }
 
 interface ProofResponse {
   success: boolean;
   proof: ProofData | null;
   publicSignals: string[] | null;
+  expiresAt?: number;
+  createdAt?: number;
   error?: string;
 }
 
@@ -97,10 +94,10 @@ export const generateZKProof = async (input: CircuitInput): Promise<ProofRespons
       success: true,
       proof: {
         ...response.data.proof,
-        expiresAt: response.data.expiresAt || (Date.now() + 24 * 60 * 60 * 1000),
-        createdAt: response.data.createdAt || Date.now(),
       },
       publicSignals: response.data.publicSignals,
+      expiresAt: response.data.expiresAt || (Date.now() + 24 * 60 * 60 * 1000),
+      createdAt: response.data.createdAt || Date.now(),
     };
   } catch (error) {
     console.error("ZK proof generation error:", error);
@@ -129,39 +126,6 @@ export const generateZKProof = async (input: CircuitInput): Promise<ProofRespons
       publicSignals: null,
       error: errorMessage
     };
-  }
-};
-
-// Verify an existing proof
-export const verifyZKProof = async (walletAddress: string): Promise<boolean> => {
-  try {
-    const proofStr = localStorage.getItem("zk_proof");
-    if (!proofStr) return false;
-    
-    const proofData = JSON.parse(proofStr) as ProofData;
-    
-    // Check if the proof is expired
-    if (proofData.expiresAt < Date.now()) {
-      localStorage.removeItem("zk_proof");
-      return false;
-    }
-    
-    // const apiUrl = import.meta.env.VITE_API_URL || "/api";
-    
-    // // Call the API to verify the proof
-    // const response = await axios.post(
-    //   `${apiUrl}/zkproof/verify`, 
-    //   {
-    //     walletAddress,
-    //     proof: proofData.proof,
-    //     publicSignals: proofData.publicSignals
-    //   }
-    // );
-    
-    return true;
-  } catch (error) {
-    console.error("Error verifying existing proof:", error);
-    return false;
   }
 };
 

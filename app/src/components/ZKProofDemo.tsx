@@ -12,8 +12,6 @@ interface ProofData {
     pi_b: string[][];
     pi_c: string[];
     protocol: string;
-    expiresAt: number;
-    createdAt: number;
   };
   publicSignals: string[];
   expiresAt: number;
@@ -160,7 +158,7 @@ const ZKProofDemo = () => {
       );
       console.log("ZK proof input:", input);
   
-      const { success, proof, publicSignals, error } = await generateZKProof(input);
+      const { success, proof, publicSignals, expiresAt, createdAt, error } = await generateZKProof(input);
       
       setVerificationResult(success);
       
@@ -170,8 +168,8 @@ const ZKProofDemo = () => {
         const completeProofData: ProofData = {
           proof,
           publicSignals,  // Include the public signals here
-          expiresAt: proof.expiresAt,
-          createdAt: proof.createdAt
+          expiresAt: expiresAt,
+          createdAt: createdAt,
         };
       
         setProofData(completeProofData);

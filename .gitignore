@@ -14,3 +14,4 @@ zklogin/powersOfTau28_hez_final_21.ptau
 zklogin/test/**/*.r1cs 
 zklogin/test/**/*.sym
 zklogin/yarn.lock
+account-abstraction/data/zkproofs.json

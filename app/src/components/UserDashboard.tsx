@@ -85,23 +85,82 @@ const UserDashboard = () => {
     };
     
     // Check if we have a valid ZK proof
-    const checkProof = () => {
-      const proofData = localStorage.getItem('zk_proof');
-      if (proofData) {
-        try {
-          const proof = JSON.parse(proofData);
-          const now = Date.now();
-          // Proof valid for 24 hours
-          const isValid = now < proof.expiresAt;
-          setIsProofValid(isValid);
-          setCurrentProof(isValid ? proof : null);
-        } catch (e) {
+    const checkProof = async () => {
+      try {
+        // First check if we have a token with sub
+        const tokenData = localStorage.getItem('token');
+        if (!tokenData) {
           setIsProofValid(false);
           setCurrentProof(null);
+          return;
         }
-      } else {
+    
+        // Extract sub from token
+        const { idToken } = JSON.parse(tokenData);
+        const tokenParts = idToken.split('.');
+        if (tokenParts.length !== 3) {
+          throw new Error("Invalid token format");
+        }
+        
+        const payload = JSON.parse(atob(tokenParts[1]));
+        const sub = payload.sub;
+        
+        if (!sub) {
+          throw new Error("No subject ID found in token");
+        }
+    
+        // Fetch proof from server API
+        const response = await axios.get(`http://localhost:3001/api/zkproof?sub=${encodeURIComponent(sub)}`);
+        
+        if (response.data.success && response.data.proofData) {
+          const serverProof = response.data.proofData;
+          const now = Date.now();
+          
+          // Check if proof is still valid
+          const isValid = now < serverProof.expiresAt;
+          
+          setIsProofValid(isValid);
+          
+          if (isValid) {
+            setCurrentProof(serverProof);
+            // Update localStorage for backward compatibility
+            localStorage.setItem('zk_proof', JSON.stringify(serverProof));
+          } else {
+            setCurrentProof(null);
+            localStorage.removeItem('zk_proof');
+          }
+        } else {
+          console.error("Failed to fetch proof data:", response.data.error);
+          setIsProofValid(false);
+          setCurrentProof(null);
+          toast.error("Failed to fetch ZK proof data from server");
+        }
+      } catch (error) {
+        console.error("Error checking proof validity:", error);
+        
         setIsProofValid(false);
         setCurrentProof(null);
+        
+        // Show error notification to user
+        if (axios.isAxiosError(error)) {
+          if (error.response) {
+            toast.error(`Proof validation failed: ${error.response.data.error || 'Server error'}`);
+          } else if (error.request) {
+            toast.error("Network error. Please check your connection.");
+          } else {
+            toast.error("Error verifying proof. Please try again.");
+          }
+        } else {
+          toast.error("Failed to verify ZK proof");
+        }
+      }
+    };
+    
+    const runCheckProof = async () => {
+      try {
+        await checkProof();
+      } catch (error) {
+        console.error("Error in checkProof:", error);
       }
     };
     
@@ -113,17 +172,17 @@ const UserDashboard = () => {
 
     loadUserInfo();
     fetchBalance();
-    checkProof();
+    runCheckProof();
     
     // Check proof validity every minute
-    const proofInterval = setInterval(checkProof, 60000);
+    const proofInterval = setInterval(runCheckProof, 60000);
     
     // Add event listener for ZKProofDemo component events
     const handleProofStatusChange = (event: Event) => {
       const customEvent = event as CustomEvent;
       setIsProofValid(customEvent.detail.verified);
       if (customEvent.detail.verified) {
-        checkProof(); // Re-check to update currentProof
+        runCheckProof(); // Re-check to update currentProof
       }
     };
     

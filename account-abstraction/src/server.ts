@@ -69,7 +69,7 @@ function saveProofsToFile() {
 // Store a ZK proof
 app.post('/api/zkproof', async (req, res) => {
   try {
-    const { sub, proofData, publicSignals } = req.body;
+    const { sub, proofData } = req.body;
     
     if (!sub || !proofData) {
       return res.status(400).json({ 
