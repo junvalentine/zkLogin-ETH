@@ -22,17 +22,6 @@ const deployWalletContractFactory: DeployFunction = async function (hre: Hardhat
       gasLimit: 6e6,
       log: true,
       deterministicDeployment: true
-    })
-
-  await hre.deployments.deploy('Groth16Verifier', {
-    from,
-    deterministicDeployment: true,
-    log: true
-  })
-  await hre.deployments.deploy('TestCounter', {
-    from,
-    deterministicDeployment: true,
-    log: true
   })
 }
 

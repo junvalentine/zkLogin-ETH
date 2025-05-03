@@ -72,7 +72,7 @@ contract WalletContract is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, I
       * @param anOwner the owner (signer) of this account
      */
     function initialize(address anOwner, uint256 salt) public virtual initializer {
-        _initialize(address(this));
+        _initialize(anOwner);
         zkaddr = salt;
     }
 
