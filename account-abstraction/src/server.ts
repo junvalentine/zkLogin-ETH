@@ -23,10 +23,10 @@ app.use(express.json());
 const provider = new ethers.providers.JsonRpcProvider('http://34.80.24.2:8545');
 const signer = provider.getSigner();
 const signerAddress =  signer.getAddress();
-const factoryAddress = "0xdC914F2dd90DA2f6A9E392cd7A871877C39530AD";
+const factoryAddress = "0xe0c0DA60d93587d76c77AE8525C5093448E72Ed6";
 const factory = WalletContractFactory__factory.connect(factoryAddress, signer);
 
-const entryPointAddress = "0x0000000071727De22E5E9d8BAf0edAc6f37da032";
+const entryPointAddress = "0x275904214F2Fc15D1734cf1D8754e6F4c1dD793B";
 const entryPoint = EntryPoint__factory.connect(entryPointAddress, signer);
 const chainId = 31337; // Update with your actual chain ID
 

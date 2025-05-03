@@ -105,7 +105,14 @@ const ZKProofDemo = () => {
         throw new Error("Invalid token format");
       }
       
-      const payload = JSON.parse(atob(tokenParts[1]));
+      const payload = JSON.parse(
+        decodeURIComponent(
+          atob(tokenParts[1].replace(/-/g, '+').replace(/_/g, '/'))
+            .split('')
+            .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .join('')
+        )
+      );
       const sub = payload.sub;
       
       if (!sub) {
