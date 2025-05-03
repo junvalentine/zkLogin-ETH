@@ -6,6 +6,7 @@ import * as snarkjs from 'snarkjs';
 import { performance } from 'perf_hooks';
 import fs from 'fs';
 
+
 const app = express();
 const port = 3000;
 
@@ -102,6 +103,7 @@ app.post('/generate-proof', function(req, res) {
     });
   });
 });
+
 
 // Health check endpoint
 app.get('/health', function(req, res) {

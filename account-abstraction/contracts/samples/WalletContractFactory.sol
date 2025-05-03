@@ -32,7 +32,7 @@ contract WalletContractFactory {
         }
         ret = WalletContract(payable(new ERC1967Proxy{salt : bytes32(salt)}(
                 address(accountImplementation),
-                abi.encodeCall(WalletContract.initialize, (owner, salt))
+                abi.encodeCall(WalletContract.initialize, (address(this), salt))
             )));
     }
 
@@ -44,7 +44,7 @@ contract WalletContractFactory {
                 type(ERC1967Proxy).creationCode,
                 abi.encode(
                     address(accountImplementation),
-                    abi.encodeCall(WalletContract.initialize, (owner, salt))
+                    abi.encodeCall(WalletContract.initialize, (address(this), salt))
                 )
             )));
     }

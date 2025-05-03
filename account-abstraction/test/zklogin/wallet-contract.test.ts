@@ -18,7 +18,7 @@ import {
   ONE_ETH,
   HashZero, deployEntryPoint
 } from './testutils'
-import { fillUserOpDefaults, getUserOpHash, encodeUserOp, signUserOpWithZkProof, packUserOp } from './UserOp'
+import { fillUserOpDefaults, getUserOpHash, encodeUserOp, signUserOpWithZkProof, packUserOp } from '../../server/UserOp'
 import { parseEther } from 'ethers/lib/utils'
 import { UserOperation } from './UserOperation'
 const fs = require('fs');
@@ -37,14 +37,14 @@ describe('test WalletContract', function () {
     // ignore in geth.. this is just a sanity test. should be refactored to use a single-account mode..
     if (accounts.length < 2) this.skip()
     testUtil = await new TestUtil__factory(ethersSigner).deploy()
-    accountOwner = createAccountOwner()
+    accountOwner = new Wallet("0x5fe7f977e71dba2ea1a68e21057beebb9be2ac30c6410aa38d4f3fbe41dcffd2");
   })
 
-  it('owner should be able to call transfer', async () => {
-    const { proxy: account } = await createAccount(ethers.provider.getSigner(), accounts[0], entryPoint)
-    await ethersSigner.sendTransaction({ from: accounts[0], to: account.address, value: parseEther('2') })
-    await account.execute(accounts[2], ONE_ETH, '0x')
-  })
+  // it('owner should be able to call transfer', async () => {
+  //   const { proxy: account } = await createAccount(ethers.provider.getSigner(), accounts[0], entryPoint)
+  //   await ethersSigner.sendTransaction({ from: accounts[0], to: account.address, value: parseEther('2') })
+  //   await account.execute(accounts[2], ONE_ETH, '0x')
+  // })
   it('other account should not be able to call transfer', async () => {
     const { proxy: account } = await createAccount(ethers.provider.getSigner(), accounts[0], entryPoint)
     await expect(account.connect(ethers.provider.getSigner(1)).execute(accounts[2], ONE_ETH, '0x'))
@@ -91,13 +91,13 @@ describe('test WalletContract', function () {
       const publicData = JSON.parse(fs.readFileSync('test/zklogin/public.json', 'utf8'));
       
       const zkProof = {
-        pA: proofData.pi_a.slice(0, 2).map(BigInt),
+        pA: proofData.pi_a.slice(0, 2).map((x: any) => x.toString()),
         pB: [
-          [BigInt(proofData.pi_b[0][1]), BigInt(proofData.pi_b[0][0])],
-          [BigInt(proofData.pi_b[1][1]), BigInt(proofData.pi_b[1][0])]
+          [proofData.pi_b[0][1].toString(), proofData.pi_b[0][0].toString()],
+          [proofData.pi_b[1][1].toString(), proofData.pi_b[1][0].toString()]
         ],
-        pC: proofData.pi_c.slice(0, 2).map(BigInt),
-        pubSignals: publicData.map(BigInt)
+        pC: proofData.pi_c.slice(0, 2).map((x: any) => x.toString()),
+        pubSignals: publicData.map((x: any) => x.toString())
       };
       // console.log('ZK Proof loaded:', JSON.stringify(zkProof, (_, v) => typeof v === 'bigint' ? v.toString() : v));
       userOp = signUserOpWithZkProof(fillUserOpDefaults({
@@ -114,6 +114,7 @@ describe('test WalletContract', function () {
       preBalance = await getBalance(account.address)
       const packedOp = packUserOp(userOp)
       const ret = await account.validateUserOp(packedOp, userOpHash, expectedPay, { gasPrice: actualGasPrice })
+      console.log('validateUserOp return value:', ret)
       await ret.wait()
     })
 

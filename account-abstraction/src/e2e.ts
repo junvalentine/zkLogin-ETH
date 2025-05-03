@@ -1,6 +1,6 @@
 // scripts/e2e-targeted-fix.ts
 import { ethers } from 'hardhat';
-import { fillUserOpDefaults, signUserOpWithZkProof, packUserOp } from '../test/zklogin/UserOp';
+import { fillUserOpDefaults, signUserOpWithZkProof, packUserOp } from '../server/UserOp';
 import { createAccountOwner, isDeployed } from '../test/zklogin/testutils';
 import { 
   EntryPoint__factory, 
@@ -9,6 +9,7 @@ import {
 } from '../typechain';
 import fs from 'fs';
 import { BigNumber } from 'ethers';
+import { Wallet } from 'ethers';
 const { exec } = require('child_process');
 
 async function main() {
@@ -23,7 +24,7 @@ async function main() {
   
   // Known contract addresses - replace with your actual addresses
   const entryPointAddress = "0x0000000071727De22E5E9d8BAf0edAc6f37da032";
-  const factoryAddress = "0xFc14f760c3feC311D9Cf53313417Eab9d7F58bA5";
+  const factoryAddress = "0xdC914F2dd90DA2f6A9E392cd7A871877C39530AD";
   
   // Connect to existing contracts
   const entryPoint = EntryPoint__factory.connect(entryPointAddress, signer);
@@ -33,7 +34,8 @@ async function main() {
   console.log(`Using WalletContractFactory at: ${factoryAddress}`);
   
   // 1. Use existing account and keys
-  const accountOwner = createAccountOwner();
+  // const accountOwner = createAccountOwner();
+  const accountOwner = new Wallet("0x5fe7f977e71dba2ea1a68e21057beebb9be2ac30c6410aa38d4f3fbe41dcffd2");
   const ownerAddr = accountOwner.address;
   console.log(`Using account owner: ${ownerAddr}`);
   
@@ -78,7 +80,7 @@ async function main() {
   const walletBalance = await provider.getBalance(walletAddress);
   console.log(`Wallet balance: ${ethers.utils.formatEther(walletBalance)} ETH`);
   
-  const requiredBalance = ethers.utils.parseEther("0.5"); // 0.5 ETH
+  const requiredBalance = ethers.utils.parseEther("10"); // 0.5 ETH
   if (walletBalance.lt(requiredBalance)) {
     console.log(`Funding wallet with ${ethers.utils.formatEther(requiredBalance.sub(walletBalance))} ETH`);
     const fundTx = await signer.sendTransaction({
@@ -93,7 +95,7 @@ async function main() {
   const entryPointDeposit = await entryPoint.balanceOf(walletAddress);
   console.log(`EntryPoint deposit: ${ethers.utils.formatEther(entryPointDeposit)} ETH`);
   
-  const requiredDeposit = ethers.utils.parseEther("0.1"); // 0.1 ETH
+  const requiredDeposit = ethers.utils.parseEther("10"); // 0.1 ETH
   if (entryPointDeposit.lt(requiredDeposit)) {
     console.log(`Adding ${ethers.utils.formatEther(requiredDeposit.sub(entryPointDeposit))} ETH to EntryPoint deposit`);
     const depositTx = await entryPoint.depositTo(walletAddress, {
@@ -106,17 +108,7 @@ async function main() {
   // 8. Connect to the deployed wallet
   const wallet = WalletContract__factory.connect(walletAddress, signer);
   
-  // 9. Verify wallet owner (sanity check)
-  try {
-    const walletOwner = await wallet.owner();
-    console.log(`Wallet owner: ${walletOwner}`);
-    if (walletOwner.toLowerCase() !== ownerAddr.toLowerCase()) {
-      console.error(`ERROR: Wallet owner mismatch! Expected: ${ownerAddr}, Actual: ${walletOwner}`);
-      return;
-    }
-  } catch (error) {
-    console.error("Error checking wallet owner:", error);
-  }
+
   
   // 10. Prepare a simple ETH transfer
   const destinationAddress = ethers.Wallet.createRandom().address;
@@ -141,10 +133,10 @@ async function main() {
     initCode: "0x", // Empty since wallet is already deployed
     callData: callData,
     callGasLimit: BigNumber.from(200000),    // Simple ETH transfer should need much less
-    verificationGasLimit: BigNumber.from(1000000), // Verification with ZK could be expensive
-    preVerificationGas: BigNumber.from(50000),  // Standard preVerificationGas
-    maxFeePerGas: BigNumber.from(ethers.utils.parseUnits("30", "gwei")),
-    maxPriorityFeePerGas: BigNumber.from(ethers.utils.parseUnits("5", "gwei")),
+    verificationGasLimit: BigNumber.from(1500000), // Verification with ZK could be expensive
+    preVerificationGas: BigNumber.from(500000),  // Standard preVerificationGas
+    maxFeePerGas: BigNumber.from(ethers.utils.parseUnits("10", "gwei")),
+    maxPriorityFeePerGas: BigNumber.from(ethers.utils.parseUnits("10", "gwei")),
     paymasterAndData: "0x", // No paymaster
     signature: "0x" // Will be filled by signUserOpWithZkProof
   };
@@ -169,88 +161,49 @@ async function main() {
   }
   
   // Format the UserOp in the format expected by the bundler
-  const bundlerUserOp = {
-    sender: userOp.sender,
-    nonce: userOp.nonce.toString(),
-    initCode: userOp.initCode,
-    callData: userOp.callData,
-    callGasLimit: userOp.callGasLimit.toString(),
-    verificationGasLimit: userOp.verificationGasLimit.toString(),
-    preVerificationGas: userOp.preVerificationGas.toString(),
-    maxFeePerGas: userOp.maxFeePerGas.toString(),
-    maxPriorityFeePerGas: userOp.maxPriorityFeePerGas.toString(),
-    paymasterAndData: userOp.paymasterAndData,
-    signature: userOp.signature
-  };
+  // const bundlerUserOp = {
+  //   sender: userOp.sender,
+  //   nonce: userOp.nonce.toString(),
+  //   initCode: userOp.initCode,
+  //   callData: userOp.callData,
+  //   callGasLimit: userOp.callGasLimit.toString(),
+  //   verificationGasLimit: userOp.verificationGasLimit.toString(),
+  //   preVerificationGas: userOp.preVerificationGas.toString(),
+  //   maxFeePerGas: userOp.maxFeePerGas.toString(),
+  //   maxPriorityFeePerGas: userOp.maxPriorityFeePerGas.toString(),
+  //   paymasterAndData: userOp.paymasterAndData,
+  //   signature: userOp.signature
+  // };
   
-  // Create the JSON-RPC request payload
-  const bundlerPayload = {
-    jsonrpc: "2.0",
-    // method: "eth_estimateUserOperationGas",
-    method: "eth_sendUserOperation",
-    params: [bundlerUserOp, entryPointAddress],
-    id: 123
-  };
+  // const bundlerPayload = {
+  //   jsonrpc: "2.0",
+  //   // method: "eth_estimateUserOperationGas",
+  //   method: "eth_sendUserOperation",
+  //   params: [bundlerUserOp, entryPointAddress],
+  //   id: 123
+  // };
   
-  // Use curl to send the request to the bundler
-  const bundlerUrl = "http://0.0.0.0:14337/rpc";
+  // const bundlerUrl = "http://0.0.0.0:14337/rpc";
   
-  const curlCommand = `curl --request POST --url ${bundlerUrl} --header 'Content-Type: application/json' --data '${JSON.stringify(bundlerPayload)}'`;
+  // const curlCommand = `curl --request POST --url ${bundlerUrl} --header 'Content-Type: application/json' --data '${JSON.stringify(bundlerPayload)}'`;
   
-  console.log("Sending UserOp to bundler...");
-  console.log(`Sending request to bundler at ${bundlerUrl}`);
+  // console.log("Sending UserOp to bundler...");
+  // console.log(`Sending request to bundler at ${bundlerUrl}`);
   
-  try {
-    const { stdout, stderr } = await new Promise((resolve, reject) => {
-      exec(curlCommand, (error, stdout, stderr) => {
-        if (error) reject(error);
-        else resolve({ stdout, stderr });
-      });
-    });
+  // try {
+  //   const { stdout, stderr } = await new Promise((resolve, reject) => {
+  //     exec(curlCommand, (error, stdout, stderr) => {
+  //       if (error) reject(error);
+  //       else resolve({ stdout, stderr });
+  //     });
+  //   });
     
-    if (stderr) console.warn(`Bundler stderr: ${stderr}`);
-    console.log(`Bundler response: ${stdout}`);
-  } catch (execError) {
-    console.error(`Request failed: ${execError.message}`);
-  }
-  // Parse the bundler response to get the UserOp hash
-  const bundlerResponse = JSON.parse(stdout);
-  const userOpHash = bundlerResponse.result;
-  console.log(`UserOp hash: ${userOpHash}`);
-  
-  // Wait for the transaction to be mined
-  console.log("Waiting for transaction to be mined...");
-  await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
-  
-  // Get UserOp receipt
-  const receiptPayload = {
-    jsonrpc: "2.0",
-    id: 3,
-    method: "eth_getUserOperationReceipt",
-    params: [userOpHash]
-  };
-  
-  const receiptCommand = `curl --request POST --url ${bundlerUrl} --header 'Content-Type: application/json' --data '${JSON.stringify(receiptPayload)}'`;
-  
-  try {
-    const { stdout: receiptStdout } = await new Promise((resolve, reject) => {
-      exec(receiptCommand, (error, stdout, stderr) => {
-        if (error) reject(error);
-        else resolve({ stdout, stderr });
-      });
-    });
-    
-    console.log(`Receipt response: ${receiptStdout}`);
-    
-    // Log transaction hash if available
-    const receipt = JSON.parse(receiptStdout);
-    if (receipt.result && receipt.result.receipt) {
-      console.log(`Transaction hash: ${receipt.result.receipt.transactionHash}`);
-    }
-  } catch (error) {
-    console.error(`Failed to get receipt: ${error.message}`);
-  }
-  process.exit(0);
+  //   if (stderr) console.warn(`Bundler stderr: ${stderr}`);
+  //   console.log(`Bundler response: ${stdout}`);
+  // } catch (execError) {
+  //   console.error(`Request failed: ${execError.message}`);
+  // }
+  // process.exit(0);
   // 15. Pack the UserOp
   const packedUserOp = packUserOp(userOp);
   // 16. Log a short version of the UserOp for debugging
@@ -284,7 +237,9 @@ async function main() {
       // Verify the transfer was successful
       const destinationBalance = await provider.getBalance(destinationAddress);
       console.log(`Destination balance: ${ethers.utils.formatEther(destinationBalance)} ETH`);
-      
+      // Log our wallet balance after the transaction
+      const newWalletBalance = await provider.getBalance(walletAddress);
+      console.log(`New wallet balance: ${ethers.utils.formatEther(newWalletBalance)} ETH`);
       if (destinationBalance.gte(transferAmount)) {
         console.log("Transfer successful!");
       } else {

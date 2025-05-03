@@ -12,18 +12,18 @@ import {
   packAccountGasLimits,
   packPaymasterData,
   rethrow
-} from './testutils'
+} from '../test/zklogin/testutils'
 import { ecsign, toRpcSig, keccak256 as keccak256_buffer } from 'ethereumjs-util'
 import {
   EntryPoint, EntryPointSimulations__factory
-} from '../../typechain'
-import { PackedUserOperation, UserOperation } from './UserOperation'
-import { Create2Factory } from '../../src/Create2Factory'
+} from '../typechain'
+import { PackedUserOperation, UserOperation } from '../test/zklogin/UserOperation'
+import { Create2Factory } from '../src/Create2Factory'
 import { TransactionRequest } from '@ethersproject/abstract-provider'
 
-import EntryPointSimulationsJson from '../../artifacts/contracts/core/EntryPointSimulations.sol/EntryPointSimulations.json'
+import EntryPointSimulationsJson from '../artifacts/contracts/core/EntryPointSimulations.sol/EntryPointSimulations.json'
 import { ethers } from 'hardhat'
-import { IEntryPointSimulations } from '../../typechain/contracts/core/EntryPointSimulations'
+import { IEntryPointSimulations } from '../typechain/contracts/core/EntryPointSimulations'
 
 export function packUserOp (userOp: UserOperation): PackedUserOperation {
   const accountGasLimits = packAccountGasLimits(userOp.verificationGasLimit, userOp.callGasLimit)
@@ -110,10 +110,10 @@ export function signUserOp (op: UserOperation, signer: Wallet, entryPoint: strin
 }
 export function signUserOpWithZkProof(op: UserOperation, signer: Wallet, entryPoint: string, chainId: number,
   zkProof: {
-    pA: [BigNumber, BigNumber],
-    pB: [[BigNumber, BigNumber], [BigNumber, BigNumber]],
-    pC: [BigNumber, BigNumber],
-    pubSignals: BigNumber[]
+    pA: string[],
+    pB: string[][],
+    pC: string[],
+    pubSignals: string[]
   }
 ): UserOperation {
   // Get the message hash to sign
@@ -126,13 +126,12 @@ export function signUserOpWithZkProof(op: UserOperation, signer: Wallet, entryPo
   // Create signature using ecsign (synchronous method)
   const sig = ecsign(keccak256_buffer(msg1), Buffer.from(arrayify(signer.privateKey)))
   const txSignature = toRpcSig(sig.v, sig.r, sig.s)
-  
-  // Convert bigint values to BigNumber for encoding
-  const pA = zkProof.pA.map(n => BigNumber.from(n.toString()))
-  const pB = zkProof.pB.map(pair => pair.map(n => BigNumber.from(n.toString())))
-  const pC = zkProof.pC.map(n => BigNumber.from(n.toString()))
-  const pubSignals = zkProof.pubSignals.map(n => BigNumber.from(n.toString()))
-  
+
+  // Convert string values to BigNumber for encoding
+  const pA = zkProof.pA.map(n => BigNumber.from(n))
+  const pB = zkProof.pB.map(pair => pair.map(n => BigNumber.from(n)))
+  const pC = zkProof.pC.map(n => BigNumber.from(n))
+  const pubSignals = zkProof.pubSignals.map(n => BigNumber.from(n))
   // Encode the ZK proof and signature together
   const encodedSignature = defaultAbiCoder.encode(
     ['uint[2]', 'uint[2][2]', 'uint[2]', 'uint[39]', 'bytes'],
