@@ -15,4 +15,5 @@ zklogin/test/**/*.r1cs
 zklogin/test/**/*.sym
 zklogin/yarn.lock
 account-abstraction/data/zkproofs.json
-account-abstraction/data/zkproofs.json
+test/node_modules
+test/package-lock.json
