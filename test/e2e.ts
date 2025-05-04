@@ -418,7 +418,26 @@ interface Proof {
   }
 
 
-
+  const getProofSize = (proof: ProofData, publicSignals: string[]): { 
+    sizeInBytes: number, 
+    details: { proofBytes: number, signalsBytes: number } 
+  } => {
+    // Convert proof to JSON string to measure actual serialized size
+    const proofJson = JSON.stringify(proof);
+    const signalsJson = JSON.stringify(publicSignals);
+    
+    // Calculate sizes
+    const proofBytes = Buffer.from(proofJson).length;
+    const signalsBytes = Buffer.from(signalsJson).length;
+    
+    return {
+      sizeInBytes: proofBytes + signalsBytes,
+      details: {
+        proofBytes,
+        signalsBytes
+      }
+    };
+  };
 
 
 const generateZKProof = async (input: CircuitInput): Promise<ProofResponse> => {
@@ -533,6 +552,12 @@ const generateZKProof = async (input: CircuitInput): Promise<ProofResponse> => {
 
       const zkProofData = currentProof.proof;
       const publicData = currentProof.publicSignals;
+
+      const proofSize = getProofSize(zkProofData, publicData);
+      console.log(`ZK Proof Size: ${proofSize.sizeInBytes} bytes (${(proofSize.sizeInBytes / 1024).toFixed(2)} KB)`);
+      console.log(`  - Proof: ${proofSize.details.proofBytes} bytes`);
+      console.log(`  - Public Signals: ${proofSize.details.signalsBytes} bytes`);
+
 
       console.log("Sending transaction...");
       
