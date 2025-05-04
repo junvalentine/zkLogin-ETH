@@ -387,7 +387,7 @@ const ZKProofDemo = () => {
             <>
               <Loader2 className="h-4 w-4 animate-spin mr-2" /> Generating Proof...
             </>
-          ) : "Generate & Verify Proof"}
+          ) : "Generate Proof"}
         </Button>
       </div>
     );

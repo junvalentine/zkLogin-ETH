@@ -182,7 +182,7 @@ const UserDashboard = () => {
     runCheckProof();
     
     // Check proof validity every minute
-    const proofInterval = setInterval(runCheckProof, 60000);
+    const proofInterval = setInterval(runCheckProof, 10000);
     
     // Add event listener for ZKProofDemo component events
     const handleProofStatusChange = (event: Event) => {
