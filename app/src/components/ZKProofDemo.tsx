@@ -276,7 +276,7 @@ const ZKProofDemo = () => {
             <CheckCircle2 className="h-5 w-5 text-green-500" />
             <div className="w-full">
               <div className="flex justify-between items-center w-full">
-                <p className="font-medium">Verification Successful</p>
+                <p className="font-medium">Generate Successful</p>
                 <span className="text-xs text-green-500">{calculateExpiryTime(proofData.expiresAt)}</span>
               </div>
               <p className="text-sm text-muted-foreground">
