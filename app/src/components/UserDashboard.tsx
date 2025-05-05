@@ -17,6 +17,8 @@ interface UserInfo {
   picture: string;
 }
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+
 const UserDashboard = () => {
   const { walletAddress } = useAuth();
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
@@ -59,7 +61,7 @@ const UserDashboard = () => {
       try {
         setIsRefreshing(true);
         
-        const response = await axios.post('http://localhost:3001/balance', {
+        const response = await axios.post(`${API_URL}/balance`, {
           walletAddress
         }, {
           headers: {
@@ -117,7 +119,7 @@ const UserDashboard = () => {
         }
     
         // Fetch proof from server API
-        const response = await axios.get(`http://localhost:3001/api/zkproof?sub=${encodeURIComponent(sub)}`);
+        const response = await axios.get(`${API_URL}/api/zkproof?sub=${encodeURIComponent(sub)}`);
         
         if (response.data.success && response.data.proofData) {
           const serverProof = response.data.proofData;
@@ -240,7 +242,7 @@ const UserDashboard = () => {
     
     try {
       // Request ETH from the faucet
-      const response = await axios.post('http://localhost:3001/faucet', {
+      const response = await axios.post(`${API_URL}/faucet`, {
         address: walletAddress
       }, {
         headers: {
@@ -253,7 +255,7 @@ const UserDashboard = () => {
         toast.success(`Received ${response.data.amount} from faucet`);
         
         // Refresh balance after successful faucet request
-        const balanceResponse = await axios.post('http://localhost:3001/balance', {
+        const balanceResponse = await axios.post(`${API_URL}/balance`, {
           walletAddress
         }, {
           headers: {
@@ -328,7 +330,7 @@ const UserDashboard = () => {
         pubSignals: publicData.map((x: any) => x.toString())
       };
 
-      const response = await axios.post('http://localhost:3001/sendTransaction', {
+      const response = await axios.post(`${API_URL}/sendTransaction`, {
         walletAddress, 
         privkey,
         destinationAddress: recipientAddress, 
@@ -345,7 +347,7 @@ const UserDashboard = () => {
         toast.success(`Successfully sent ${sendAmount} ETH to ${recipientAddress.substring(0, 6)}...${recipientAddress.substring(38)}`);
         
         // Refresh balance after transaction
-        const balanceResponse = await axios.post('http://localhost:3001/balance', {
+        const balanceResponse = await axios.post(`${API_URL}/balance`, {
           walletAddress
         });
         

@@ -19,6 +19,8 @@ interface AuthContextType {
   generateWalletFromToken: (token: string, userId: string) => Promise<string>;
 }
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+
 const AuthContext = createContext<AuthContextType>({
   walletAddress: null,
   // isConnecting: false,
@@ -71,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       console.log('Sending JWT and salt to zkaddr_salt endpoint...');
       
-      const response = await axios.post('http://localhost:3001/zkaddr_salt', {
+      const response = await axios.post(`${API_URL}/zkaddr_salt`, {
         jwt,
         salt
       }, {
@@ -106,7 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       console.log('Sending owneraddr and salt to deploy endpoint...'); // Updated log message
       
-      const response = await axios.post('http://localhost:3001/deploy', {
+      const response = await axios.post(`${API_URL}/deploy`, {
         ownerAddr,
         salt
       }, {

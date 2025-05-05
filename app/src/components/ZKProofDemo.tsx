@@ -18,6 +18,8 @@ interface ProofData {
   createdAt: number;
 }
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+
 const ZKProofDemo = () => {
   const { walletAddress } = useAuth();
   const [isVerifying, setIsVerifying] = useState(false);
@@ -62,7 +64,7 @@ const ZKProofDemo = () => {
         }
         
         // Fetch proof from database via API
-        const response = await axios.get(`http://localhost:3001/api/zkproof?sub=${encodeURIComponent(sub)}`);
+        const response = await axios.get(`${API_URL}/api/zkproof?sub=${encodeURIComponent(sub)}`);
         
         if (response.data.success && response.data.proof) {
           const savedProof = response.data.proof as ProofData;
@@ -121,7 +123,7 @@ const ZKProofDemo = () => {
       
       // First, check if a valid proof exists in database
       try {
-        const response = await axios.get(`http://localhost:3001/api/zkproof?sub=${encodeURIComponent(sub)}`);
+        const response = await axios.get(`${API_URL}/api/zkproof?sub=${encodeURIComponent(sub)}`);
         
         if (response.data.success && response.data.proofData) {
           const savedProof = response.data.proofData as ProofData;
@@ -182,7 +184,7 @@ const ZKProofDemo = () => {
         setProofData(completeProofData);
         
         // Store in database
-        await axios.post('http://localhost:3001/api/zkproof', {
+        await axios.post(`${API_URL}/api/zkproof`, {
           sub,
           proofData: completeProofData,
         });
@@ -218,7 +220,7 @@ const ZKProofDemo = () => {
           
           if (sub) {
             // Delete from database via API
-            await axios.delete(`http://localhost:3001/api/zkproof?sub=${encodeURIComponent(sub)}`);
+            await axios.delete(`${API_URL}/api/zkproof?sub=${encodeURIComponent(sub)}`);
           }
         }
       }
