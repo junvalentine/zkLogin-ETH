@@ -10,6 +10,7 @@ import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import * as crypto from 'crypto-js';
+import { clear } from "console";
 
 interface UserInfo {
   name: string;
@@ -184,7 +185,10 @@ const UserDashboard = () => {
     runCheckProof();
     
     // Check proof validity every minute
-    const proofInterval = setInterval(runCheckProof, 10000);
+    const proofInterval = setInterval(runCheckProof, 1000);
+
+    // Fetch balance every seconds
+    //const balanceInterval = setInterval(fetchBalance, 1000);
     
     // Add event listener for ZKProofDemo component events
     const handleProofStatusChange = (event: Event) => {
@@ -198,6 +202,7 @@ const UserDashboard = () => {
     window.addEventListener("zkproof-status-change", handleProofStatusChange);
     
     return () => {
+      //clearInterval(balanceInterval);
       clearInterval(proofInterval);
       window.removeEventListener("zkproof-status-change", handleProofStatusChange);
     };
