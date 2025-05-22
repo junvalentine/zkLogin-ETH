@@ -60,7 +60,6 @@ const UserDashboard = () => {
       if (!walletAddress) return;
 
       try {
-        setIsRefreshing(true);
         
         const response = await axios.post(`${API_URL}/balance`, {
           walletAddress
@@ -83,7 +82,7 @@ const UserDashboard = () => {
         console.error("Error loading balance:", error);        
         toast.error("Could not connect to blockchain. Using cached balance.");
       } finally {
-        setIsRefreshing(false);
+        
       }
     };
     
@@ -185,16 +184,16 @@ const UserDashboard = () => {
     runCheckProof();
     
     // Check proof validity every minute
-    const proofInterval = setInterval(runCheckProof, 1000);
+    const proofInterval = setInterval(runCheckProof, 60000);
 
     // Fetch balance every seconds
-    //const balanceInterval = setInterval(fetchBalance, 1000);
+    const balanceInterval = setInterval(fetchBalance, 1000);
     
     // Add event listener for ZKProofDemo component events
     const handleProofStatusChange = (event: Event) => {
       const customEvent = event as CustomEvent;
       setIsProofValid(customEvent.detail.verified);
-      if (customEvent.detail.verified) {
+      if (customEvent.detail.verified || customEvent.detail.forceCheck) {
         runCheckProof(); // Re-check to update currentProof
       }
     };
@@ -202,7 +201,7 @@ const UserDashboard = () => {
     window.addEventListener("zkproof-status-change", handleProofStatusChange);
     
     return () => {
-      //clearInterval(balanceInterval);
+      clearInterval(balanceInterval);
       clearInterval(proofInterval);
       window.removeEventListener("zkproof-status-change", handleProofStatusChange);
     };

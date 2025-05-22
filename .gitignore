@@ -17,3 +17,6 @@ zklogin/yarn.lock
 account-abstraction/data/zkproofs.json
 test/node_modules
 test/package-lock.json
+app/.env
+account-abstraction/data/zkproofs.json
+app/.env

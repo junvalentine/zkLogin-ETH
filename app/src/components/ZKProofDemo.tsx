@@ -66,8 +66,8 @@ const ZKProofDemo = () => {
         // Fetch proof from database via API
         const response = await axios.get(`${API_URL}/api/zkproof?sub=${encodeURIComponent(sub)}`);
         
-        if (response.data.success && response.data.proof) {
-          const savedProof = response.data.proof as ProofData;
+        if (response.data.success && response.data.proofData) {
+          const savedProof = response.data.proofData as ProofData;
           
           if (savedProof.expiresAt > Date.now()) {
             setProofData(savedProof);
@@ -191,6 +191,12 @@ const ZKProofDemo = () => {
         
         // Also store in localStorage for backward compatibility
         localStorage.setItem("zk_proof", JSON.stringify(completeProofData));
+        // Explicitly trigger checkProof function in parent by dispatching a custom event
+        const proofUpdatedEvent = new CustomEvent("zkproof-status-change", {
+          detail: { verified: true, forceCheck: true }
+        });
+        window.dispatchEvent(proofUpdatedEvent);
+
         toast.success("New zero-knowledge identity proof verified successfully");
       } else {
         toast.error(error || "Failed to verify zero-knowledge identity proof");
